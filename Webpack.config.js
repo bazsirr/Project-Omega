@@ -5,7 +5,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 module.exports = (env, argv) => {
   const isDev = argv.mode === "development";
   return {
-    entry: "./fable_output/App.js",
+    entry: "./index.js",
     output: {
       path: path.join(__dirname, "dist"),
       filename: isDev ? "bundle.js" : "bundle.[contenthash].js",
@@ -34,7 +34,7 @@ module.exports = (env, argv) => {
     },
     plugins: [
       new HtmlWebpackPlugin({
-        template: "./public/index.html",
+        template: "./index.html",
         filename: "index.html"
       }),
       ...(isDev ? [] : [new MiniCssExtractPlugin({ filename: "styles.[contenthash].css" })])
