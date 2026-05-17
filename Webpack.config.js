@@ -8,13 +8,8 @@ module.exports = (env, argv) => {
     entry: "./index.js",
     output: {
       path: path.join(__dirname, "dist"),
-      filename: isDev ? "bundle.js" : "bundle.[contenthash].js",
-      publicPath: isDev ? "/" : "./"
-    },
-    devServer: {
-      port: 8080,
-      hot: true,
-      static: { directory: path.join(__dirname, "public") }
+      filename: "bundle.js",
+      publicPath: "./"
     },
     module: {
       rules: [
@@ -37,7 +32,7 @@ module.exports = (env, argv) => {
         template: "./index.html",
         filename: "index.html"
       }),
-      ...(isDev ? [] : [new MiniCssExtractPlugin({ filename: "styles.[contenthash].css" })])
+      ...(isDev ? [] : [new MiniCssExtractPlugin({ filename: "styles.css" })])
     ]
   };
 };
