@@ -5,7 +5,7 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 module.exports = (env, argv) => {
   const isDev = argv.mode === "development";
   return {
-    entry: "./src/index.js",
+    entry: "./fable_output/App.js",
     output: {
       path: path.join(__dirname, "dist"),
       filename: isDev ? "bundle.js" : "bundle.[contenthash].js",
@@ -18,15 +18,6 @@ module.exports = (env, argv) => {
     },
     module: {
       rules: [
-        {
-          test: /\.(fs|fsx)$/,
-          use: {
-            loader: "fable-loader",
-            options: {
-              define: isDev ? ["DEBUG"] : []
-            }
-          }
-        },
         {
           test: /\.js$/,
           exclude: /node_modules/,
