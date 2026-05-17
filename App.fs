@@ -74,10 +74,10 @@ let update msg model =
     | DeleteSession id ->
         { model with Sessions = model.Sessions |> List.filter (fun s -> s.Id <> id) }, Cmd.none
 
-let findSubject subjects id =
-    subjects |> List.tryFind (fun s -> s.Id = id)
+let findSubject (subjects: Subject list) (id: int) =
+    subjects |> List.tryFind (fun sub -> sub.Id = id)
 
-let totalMinutes sessions =
+let totalMinutes (sessions: Session list) =
     sessions |> List.sumBy (fun s -> s.Minutes)
 
 let navbar model dispatch =
