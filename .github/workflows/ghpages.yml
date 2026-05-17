@@ -30,10 +30,10 @@ jobs:
         run: dotnet tool install --global fable --version 4.3.0
 
       - name: Restore NuGet packages
-        run: dotnet restore
+        run: dotnet restore StudyFlowAlpha.fsproj
 
       - name: Run Fable (F# -> JS)
-        run: fable StudyFlowAlpha.fsproj --outDir fable_output --noCache
+        run: fable StudyFlowAlpha.fsproj --outDir fable_output --noCache --run "echo done"
 
       - name: Install npm dependencies
         run: npm install
