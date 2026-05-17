@@ -1,2 +1,2 @@
 import "./style.css";
-import "./App.fs";
+import "./fable_output/App.js";
