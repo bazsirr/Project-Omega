@@ -478,9 +478,7 @@ let pomodoroPage model dispatch =
                               StrokeDasharray (string circumference)
                               StrokeDashoffset (string strokeDashoffset)
                               StrokeLinecap "round"
-                              Style [ CSSProp.Custom("transform", "rotate(-90deg)")
-                                      CSSProp.Custom("transform-origin", "50% 50%")
-                                      CSSProp.Custom("transition", "stroke-dashoffset 1s linear") ] ] []
+                              SVGAttr.Custom("style", "transform:rotate(-90deg);transform-origin:50% 50%;transition:stroke-dashoffset 1s linear") ] []
                 ]
                 div [ Class "timer-text" ] [
                     div [ Class "timer-display"; Style [ Color color ] ] [ str (formatTime model.SecondsLeft) ]
@@ -799,7 +797,7 @@ let view model dispatch =
 
 let timerSubscription model =
     let sub dispatch =
-        let interval = 1000.0
+        let interval = 1000
         let handler _ = dispatch Tick
         let id = window.setInterval (handler, interval)
         { new System.IDisposable with member _.Dispose() = window.clearInterval id }
