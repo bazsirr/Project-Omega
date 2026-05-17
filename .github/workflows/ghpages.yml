@@ -33,7 +33,7 @@ jobs:
         run: dotnet restore
 
       - name: Run Fable (F# -> JS)
-        run: fable src/App.fs --outDir fable_output --noCache
+        run: fable App.fs --outDir fable_output --noCache
 
       - name: Install npm dependencies
         run: npm install
