@@ -4,13 +4,10 @@ open Elmish
 open Elmish.React
 open Fable.React
 open Fable.React.Props
-open Browser
 open Browser.Types
 
 type Subject = { Id: int; Name: string; Color: string }
-
 type Session = { Id: int; SubjectId: int; Minutes: int; Notes: string }
-
 type Page = Dashboard | AddSession | History
 
 type Model =
@@ -73,11 +70,7 @@ let update msg model =
             if mins <= 0 then model, Cmd.none
             else
                 let s = { Id = model.NextId; SubjectId = sid; Minutes = mins; Notes = model.NewNotes }
-                { model with
-                    Sessions = s :: model.Sessions
-                    NextId = model.NextId + 1
-                    NewNotes = ""
-                    Page = Dashboard }, Cmd.none
+                { model with Sessions = s :: model.Sessions; NextId = model.NextId + 1; NewNotes = ""; Page = Dashboard }, Cmd.none
     | DeleteSession id ->
         { model with Sessions = model.Sessions |> List.filter (fun s -> s.Id <> id) }, Cmd.none
 
@@ -88,28 +81,27 @@ let totalMinutes sessions =
     sessions |> List.sumBy (fun s -> s.Minutes)
 
 let navbar model dispatch =
-    nav [ Style [ Background "#111827"; Padding "16px 24px"; Display DisplayOptions.Flex
-                  AlignItems "center"; JustifyContent "space-between"
+    nav [ Style [ Background "#111827"; Padding "16px 24px"; Display DisplayOptions.Flex;
                   BorderBottom "1px solid #1f2937" ] ] [
-        span [ Style [ FontSize "20px"; FontWeight "800"; Color "#fff";
-                       FontFamily "sans-serif"; LetterSpacing "-0.5px" ] ] [ str "◈ StudyFlow" ]
-        div [ Style [ Display DisplayOptions.Flex; Gap "8px" ] ] [
+        span [ Style [ FontSize "20px"; FontWeight "800"; Color "#fff"; FontFamily "sans-serif"; MarginRight "auto" ] ] [ str "StudyFlow" ]
+        div [] [
             for (page, label) in [(Dashboard, "Dashboard"); (AddSession, "+ Log Session"); (History, "History")] do
                 button
                     [ Style [ Background (if model.Page = page then "#6366f1" else "transparent")
                               Color (if model.Page = page then "#fff" else "#9ca3af")
                               Border (if model.Page = page then "none" else "1px solid #374151")
                               Padding "8px 16px"; BorderRadius "8px"; Cursor "pointer"
-                              FontSize "13px"; FontWeight "600" ]
+                              FontSize "13px"; FontWeight "600"; MarginLeft "8px" ]
                       OnClick (fun _ -> dispatch (GoTo page)) ] [ str label ]
         ]
     ]
 
 let statCard label value color =
-    div [ Style [ Background "#1f2937"; Border "1px solid #374151"; BorderRadius "12px"
-                  Padding "20px"; BorderLeft (sprintf "3px solid %s" color) ] ] [
+    div [ Style [ Background "#1f2937"; Border "1px solid #374151"; BorderRadius "12px";
+                  Padding "20px"; BorderLeft (sprintf "3px solid %s" color);
+                  Display DisplayOptions.InlineBlock; MinWidth "160px"; MarginRight "16px" ] ] [
         div [ Style [ FontSize "28px"; FontWeight "800"; Color "#fff"; FontFamily "sans-serif" ] ] [ str value ]
-        div [ Style [ FontSize "12px"; Color "#9ca3af"; MarginTop "4px"; TextTransform "uppercase"; LetterSpacing "0.5px" ] ] [ str label ]
+        div [ Style [ FontSize "12px"; Color "#9ca3af"; MarginTop "4px" ] ] [ str label ]
     ]
 
 let dashboardPage model dispatch =
@@ -119,43 +111,37 @@ let dashboardPage model dispatch =
     div [ Style [ Padding "32px 40px" ] ] [
         h1 [ Style [ FontSize "26px"; FontWeight "800"; Color "#fff"; MarginBottom "8px"; FontFamily "sans-serif" ] ] [ str "Dashboard" ]
         p [ Style [ Color "#6b7280"; MarginBottom "28px"; FontSize "14px" ] ] [
-            str (sprintf "You have %d subjects and %d sessions logged." model.Subjects.Length model.Sessions.Length)
+            str (sprintf "%d subjects · %d sessions logged" model.Subjects.Length model.Sessions.Length)
         ]
-
-        div [ Style [ Display DisplayOptions.Grid; Gap "16px"; MarginBottom "32px"
-                      CSSProp.Custom("grid-template-columns", "repeat(3, 1fr)") ] ] [
+        div [ Style [ MarginBottom "32px" ] ] [
             statCard "Total Study Time" (sprintf "%dh %dm" hours mins) "#6366f1"
-            statCard "Sessions Logged" (string model.Sessions.Length) "#22c55e"
-            statCard "Active Subjects" (string model.Subjects.Length) "#f59e0b"
+            statCard "Sessions" (string model.Sessions.Length) "#22c55e"
+            statCard "Subjects" (string model.Subjects.Length) "#f59e0b"
         ]
-
         div [ Style [ Background "#1f2937"; Border "1px solid #374151"; BorderRadius "12px"; Padding "24px"; MarginBottom "24px" ] ] [
             h2 [ Style [ FontSize "16px"; FontWeight "700"; Color "#fff"; MarginBottom "20px"; FontFamily "sans-serif" ] ] [ str "Time per Subject" ]
-            div [ Style [ Display DisplayOptions.Flex; FlexDirection "column"; Gap "14px" ] ] [
-                for sub in model.Subjects do
-                    let subMins = model.Sessions |> List.filter (fun s -> s.SubjectId = sub.Id) |> List.sumBy (fun s -> s.Minutes)
-                    let pct = if total > 0 then subMins * 100 / total else 0
-                    div [] [
-                        div [ Style [ Display DisplayOptions.Flex; JustifyContent "space-between"; MarginBottom "6px" ] ] [
-                            span [ Style [ Color "#e5e7eb"; FontSize "13px"; FontWeight "500" ] ] [ str sub.Name ]
-                            span [ Style [ Color "#9ca3af"; FontSize "12px" ] ] [ str (sprintf "%d min" subMins) ]
-                        ]
-                        div [ Style [ Background "#374151"; BorderRadius "4px"; Height "6px" ] ] [
-                            div [ Style [ Background sub.Color; Width (sprintf "%d%%" pct); Height "6px"; BorderRadius "4px" ] ] []
-                        ]
+            for sub in model.Subjects do
+                let subMins = model.Sessions |> List.filter (fun s -> s.SubjectId = sub.Id) |> List.sumBy (fun s -> s.Minutes)
+                let pct = if total > 0 then subMins * 100 / total else 0
+                div [ Style [ MarginBottom "14px" ] ] [
+                    div [ Style [ Display DisplayOptions.Flex; JustifyContent "space-between"; MarginBottom "6px" ] ] [
+                        span [ Style [ Color "#e5e7eb"; FontSize "13px" ] ] [ str sub.Name ]
+                        span [ Style [ Color "#9ca3af"; FontSize "12px" ] ] [ str (sprintf "%d min" subMins) ]
                     ]
-            ]
+                    div [ Style [ Background "#374151"; BorderRadius "4px"; Height "6px" ] ] [
+                        div [ Style [ Background sub.Color; Width (sprintf "%d%%" pct); Height "6px"; BorderRadius "4px" ] ] []
+                    ]
+                ]
         ]
-
         div [ Style [ Background "#1f2937"; Border "1px solid #374151"; BorderRadius "12px"; Padding "24px" ] ] [
             h2 [ Style [ FontSize "16px"; FontWeight "700"; Color "#fff"; MarginBottom "16px"; FontFamily "sans-serif" ] ] [ str "Add Subject" ]
-            div [ Style [ Display DisplayOptions.Flex; Gap "10px" ] ] [
-                input [ Style [ Background "#111827"; Border "1px solid #374151"; Color "#fff"; Padding "10px 14px"
-                                BorderRadius "8px"; FontSize "14px"; Flex "1" ]
+            div [ Style [ Display DisplayOptions.Flex ] ] [
+                input [ Style [ Background "#111827"; Border "1px solid #374151"; Color "#fff"; Padding "10px 14px";
+                                BorderRadius "8px"; FontSize "14px"; Flex "1"; MarginRight "10px" ]
                         Placeholder "Subject name..."
                         Value model.NewSubject
                         OnChange (fun e -> dispatch (SetNewSubject e.Value)) ]
-                button [ Style [ Background "#6366f1"; Color "#fff"; Border "none"; Padding "10px 20px"
+                button [ Style [ Background "#6366f1"; Color "#fff"; Border "none"; Padding "10px 20px";
                                  BorderRadius "8px"; FontSize "13px"; FontWeight "600"; Cursor "pointer" ]
                          OnClick (fun _ -> dispatch AddSubject) ] [ str "Add" ]
             ]
@@ -167,33 +153,29 @@ let addSessionPage model dispatch =
         h1 [ Style [ FontSize "26px"; FontWeight "800"; Color "#fff"; MarginBottom "28px"; FontFamily "sans-serif" ] ] [ str "Log Study Session" ]
         div [ Style [ Background "#1f2937"; Border "1px solid #374151"; BorderRadius "12px"; Padding "28px" ] ] [
             div [ Style [ MarginBottom "18px" ] ] [
-                label [ Style [ Display DisplayOptions.Block; FontSize "12px"; FontWeight "600"; Color "#9ca3af"
-                                MarginBottom "6px"; TextTransform "uppercase"; LetterSpacing "0.5px" ] ] [ str "Subject" ]
-                select [ Style [ Width "100%"; Background "#111827"; Border "1px solid #374151"; Color "#fff"
+                label [ Style [ Display DisplayOptions.Block; FontSize "12px"; FontWeight "600"; Color "#9ca3af"; MarginBottom "6px" ] ] [ str "SUBJECT" ]
+                select [ Style [ Width "100%"; Background "#111827"; Border "1px solid #374151"; Color "#fff";
                                  Padding "10px 14px"; BorderRadius "8px"; FontSize "14px" ]
                          OnChange (fun e -> dispatch (SetSubject (e.target :?> HTMLSelectElement).value)) ] [
                     for sub in model.Subjects do
-                        option [ Value (string sub.Id)
-                                 Selected (model.SelectedSubject = Some sub.Id) ] [ str sub.Name ]
+                        option [ Value (string sub.Id); Selected (model.SelectedSubject = Some sub.Id) ] [ str sub.Name ]
                 ]
             ]
             div [ Style [ MarginBottom "18px" ] ] [
-                label [ Style [ Display DisplayOptions.Block; FontSize "12px"; FontWeight "600"; Color "#9ca3af"
-                                MarginBottom "6px"; TextTransform "uppercase"; LetterSpacing "0.5px" ] ] [ str "Duration (minutes)" ]
-                input [ Style [ Width "100%"; Background "#111827"; Border "1px solid #374151"; Color "#fff"
+                label [ Style [ Display DisplayOptions.Block; FontSize "12px"; FontWeight "600"; Color "#9ca3af"; MarginBottom "6px" ] ] [ str "DURATION (minutes)" ]
+                input [ Style [ Width "100%"; Background "#111827"; Border "1px solid #374151"; Color "#fff";
                                 Padding "10px 14px"; BorderRadius "8px"; FontSize "14px" ]
                         Type "number"; Value model.NewMinutes
                         OnChange (fun e -> dispatch (SetMinutes e.Value)) ]
             ]
             div [ Style [ MarginBottom "24px" ] ] [
-                label [ Style [ Display DisplayOptions.Block; FontSize "12px"; FontWeight "600"; Color "#9ca3af"
-                                MarginBottom "6px"; TextTransform "uppercase"; LetterSpacing "0.5px" ] ] [ str "Notes (optional)" ]
-                textarea [ Style [ Width "100%"; Background "#111827"; Border "1px solid #374151"; Color "#fff"
+                label [ Style [ Display DisplayOptions.Block; FontSize "12px"; FontWeight "600"; Color "#9ca3af"; MarginBottom "6px" ] ] [ str "NOTES (optional)" ]
+                textarea [ Style [ Width "100%"; Background "#111827"; Border "1px solid #374151"; Color "#fff";
                                    Padding "10px 14px"; BorderRadius "8px"; FontSize "14px"; MinHeight "80px" ]
                            Placeholder "What did you study?"
                            OnChange (fun e -> dispatch (SetNotes e.Value)) ] [ str model.NewNotes ]
             ]
-            button [ Style [ Width "100%"; Background "#6366f1"; Color "#fff"; Border "none"; Padding "12px"
+            button [ Style [ Width "100%"; Background "#6366f1"; Color "#fff"; Border "none"; Padding "12px";
                              BorderRadius "8px"; FontSize "14px"; FontWeight "600"; Cursor "pointer" ]
                      OnClick (fun _ -> dispatch SubmitSession) ] [ str "Log Session" ]
         ]
@@ -202,32 +184,29 @@ let addSessionPage model dispatch =
 let historyPage model dispatch =
     div [ Style [ Padding "32px 40px" ] ] [
         h1 [ Style [ FontSize "26px"; FontWeight "800"; Color "#fff"; MarginBottom "28px"; FontFamily "sans-serif" ] ] [ str "Session History" ]
-        div [ Style [ Display DisplayOptions.Flex; FlexDirection "column"; Gap "12px" ] ] [
-            if model.Sessions.IsEmpty then
-                p [ Style [ Color "#6b7280" ] ] [ str "No sessions yet. Log your first session!" ]
-            for s in model.Sessions do
-                match findSubject model.Subjects s.SubjectId with
-                | None -> ()
-                | Some sub ->
-                    div [ Style [ Background "#1f2937"; Border "1px solid #374151"; BorderRadius "10px"
-                                  Padding "16px 20px"; Display DisplayOptions.Flex
-                                  AlignItems "center"; Gap "14px" ] ] [
-                        div [ Style [ Width "10px"; Height "10px"; BorderRadius "50%"; Background sub.Color; FlexShrink "0" ] ] []
-                        div [ Style [ Flex "1" ] ] [
-                            div [ Style [ FontWeight "600"; Color "#e5e7eb"; FontSize "14px" ] ] [ str sub.Name ]
-                            if s.Notes <> "" then
-                                div [ Style [ Color "#9ca3af"; FontSize "12px"; MarginTop "2px" ] ] [ str s.Notes ]
-                        ]
-                        span [ Style [ FontWeight "700"; Color "#fff"; FontSize "15px" ] ] [ str (sprintf "%d min" s.Minutes) ]
-                        button [ Style [ Background "transparent"; Border "none"; Color "#6b7280"; FontSize "18px"
-                                         Cursor "pointer"; Padding "0 4px" ]
-                                 OnClick (fun _ -> dispatch (DeleteSession s.Id)) ] [ str "×" ]
+        if model.Sessions.IsEmpty then
+            p [ Style [ Color "#6b7280" ] ] [ str "No sessions yet." ]
+        for s in model.Sessions do
+            match findSubject model.Subjects s.SubjectId with
+            | None -> ()
+            | Some sub ->
+                div [ Style [ Background "#1f2937"; Border "1px solid #374151"; BorderRadius "10px";
+                              Padding "16px 20px"; Display DisplayOptions.Flex; MarginBottom "12px" ] ] [
+                    div [ Style [ Width "10px"; Height "10px"; BorderRadius "50%"; Background sub.Color;
+                                  MarginRight "14px"; MarginTop "4px" ] ] []
+                    div [ Style [ Flex "1" ] ] [
+                        div [ Style [ FontWeight "600"; Color "#e5e7eb"; FontSize "14px" ] ] [ str sub.Name ]
+                        if s.Notes <> "" then
+                            div [ Style [ Color "#9ca3af"; FontSize "12px"; MarginTop "2px" ] ] [ str s.Notes ]
                     ]
-        ]
+                    span [ Style [ FontWeight "700"; Color "#fff"; FontSize "15px"; MarginRight "12px" ] ] [ str (sprintf "%d min" s.Minutes) ]
+                    button [ Style [ Background "transparent"; Border "none"; Color "#6b7280"; FontSize "18px"; Cursor "pointer" ]
+                             OnClick (fun _ -> dispatch (DeleteSession s.Id)) ] [ str "x" ]
+                ]
     ]
 
 let view model dispatch =
-    div [ Style [ Background "#0f172a"; MinHeight "100vh"; FontFamily "'DM Sans', sans-serif" ] ] [
+    div [ Style [ Background "#0f172a"; MinHeight "100vh"; FontFamily "sans-serif" ] ] [
         navbar model dispatch
         match model.Page with
         | Dashboard -> dashboardPage model dispatch
