@@ -186,8 +186,8 @@ let historyPage model dispatch =
         h1 [ Style [ FontSize "26px"; FontWeight "800"; Color "#fff"; MarginBottom "28px"; FontFamily "sans-serif" ] ] [ str "Session History" ]
         if model.Sessions.IsEmpty then
             p [ Style [ Color "#6b7280" ] ] [ str "No sessions yet." ]
-        for s in model.Sessions do
-            match findSubject model.Subjects s.SubjectId with
+        for sess in model.Sessions do
+            match findSubject model.Subjects sess.SubjectId with
             | None -> ()
             | Some sub ->
                 div [ Style [ Background "#1f2937"; Border "1px solid #374151"; BorderRadius "10px";
@@ -196,12 +196,12 @@ let historyPage model dispatch =
                                   MarginRight "14px"; MarginTop "4px" ] ] []
                     div [ Style [ Flex "1" ] ] [
                         div [ Style [ FontWeight "600"; Color "#e5e7eb"; FontSize "14px" ] ] [ str sub.Name ]
-                        if s.Notes <> "" then
-                            div [ Style [ Color "#9ca3af"; FontSize "12px"; MarginTop "2px" ] ] [ str s.Notes ]
+                        if sess.Notes <> "" then
+                            div [ Style [ Color "#9ca3af"; FontSize "12px"; MarginTop "2px" ] ] [ str sess.Notes ]
                     ]
-                    span [ Style [ FontWeight "700"; Color "#fff"; FontSize "15px"; MarginRight "12px" ] ] [ str (sprintf "%d min" s.Minutes) ]
+                    span [ Style [ FontWeight "700"; Color "#fff"; FontSize "15px"; MarginRight "12px" ] ] [ str (sprintf "%d min" sess.Minutes) ]
                     button [ Style [ Background "transparent"; Border "none"; Color "#6b7280"; FontSize "18px"; Cursor "pointer" ]
-                             OnClick (fun _ -> dispatch (DeleteSession s.Id)) ] [ str "x" ]
+                             OnClick (fun _ -> dispatch (DeleteSession sess.Id)) ] [ str "x" ]
                 ]
     ]
 
