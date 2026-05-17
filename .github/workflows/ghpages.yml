@@ -27,12 +27,18 @@ jobs:
           node-version: '20'
 
       - name: Install dotnet-fable
-        run: dotnet tool install --global fable
+        run: dotnet tool install --global fable --version 4.3.0
+
+      - name: Restore NuGet packages
+        run: dotnet restore
+
+      - name: Run Fable (F# -> JS)
+        run: fable src/App.fs --outDir fable_output --noCache
 
       - name: Install npm dependencies
         run: npm install
 
-      - name: Build
+      - name: Build with webpack
         run: npm run build
 
       - name: Deploy to gh-pages
